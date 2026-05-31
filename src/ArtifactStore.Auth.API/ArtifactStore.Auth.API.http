@@ -1,0 +1,6 @@
+@ArtifactStore.Auth.API_HostAddress = http://localhost:5141
+
+GET {{ArtifactStore.Auth.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

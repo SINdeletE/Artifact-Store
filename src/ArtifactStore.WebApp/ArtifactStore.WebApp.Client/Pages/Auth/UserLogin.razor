@@ -1,0 +1,73 @@
+@inject NavigationManager Navigation
+@page "/auth/login"
+@rendermode InteractiveWebAssembly
+@using ArtifactStore.WebApp.Client.ViewModel.Auth
+@inherits Blazing.Mvvm.Components.MvvmOwningComponentBase<LoginViewModel>
+
+<PageTitle>Sign In</PageTitle>
+
+<div class="login-page">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="login-card">
+                    <div class="p-4 p-lg-5">
+                        <div class="login-intro text-center mb-4">
+                            <h1 class="login-title mb-2">Sign in</h1>
+                            <p class="login-subtitle mb-0">Enter your account details to continue to Artifact Store.</p>
+                        </div>
+
+                        <EditForm Model="@ViewModel" FormName="login" OnValidSubmit="@HandleValidSubmit">
+                            <DataAnnotationsValidator />
+                            
+                            @if (!string.IsNullOrWhiteSpace(ViewModel.StatusMessage))
+                            {
+                                <div class="login-alert" role="alert">
+                                    @ViewModel.StatusMessage
+                                </div>
+                            }
+
+                            <div class="login-form-stack">
+                                <div class="login-field">
+                                    <label class="login-label" for="nickname">Nickname</label>
+                                    <InputText id="nickname" class="login-input" @bind-Value="@ViewModel.loginModel.Nickname" />
+                                    <ValidationMessage For="@(() => @ViewModel.loginModel.Nickname)" class="login-validation" />
+                                </div>
+
+                                <div class="login-field">
+                                    <label class="login-label" for="password">Password</label>
+                                    <InputText id="password" type="password" class="login-input" @bind-Value="@ViewModel.loginModel.Password" />
+                                    <ValidationMessage For="@(() => @ViewModel.loginModel.Password)" class="login-validation" />
+                                </div>
+
+                                <div class="login-options">
+                                    <div class="form-check login-check">
+                                        <InputCheckbox id="rememberMe" class="form-check-input login-check-input" @bind-Value="@ViewModel.loginModel.RememberMe" />
+                                        <label class="form-check-label login-check-label" for="rememberMe">Remember me</label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="login-button">Sign in</button>
+                            </div>
+                        </EditForm>
+
+                        <p class="login-footer text-center mt-4 mb-0">
+                            Don't have an account?
+                            <NavLink href="/auth/register" class="login-link">Create account</NavLink>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task HandleValidSubmit()
+    {
+        if (await ViewModel.Login())
+        {
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+}

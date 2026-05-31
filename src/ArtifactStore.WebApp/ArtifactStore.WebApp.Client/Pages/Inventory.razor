@@ -1,0 +1,173 @@
+@page "/inventory"
+@rendermode InteractiveWebAssembly
+@using ArtifactStore.WebApp.Client.ViewModel.Inventory
+@inherits Blazing.Mvvm.Components.MvvmOwningComponentBase<InventoryViewModel>
+<PageTitle>Inventory</PageTitle>
+
+<section class="inventory-page">
+    <header class="inventory-header">
+        <div>
+            <span class="inventory-eyebrow">Character storage</span>
+            <h1 class="inventory-title">Inventory</h1>
+        </div>
+
+        <div class="inventory-toolbar">
+            <label class="inventory-page-field" for="inventory-page-number">
+                <span>Page</span>
+                <InputNumber id="inventory-page-number"
+                             class="inventory-page-input"
+                             min="1"
+                             @bind-Value="ViewModel.Page" />
+            </label>
+            <button type="button" class="inventory-button inventory-primary-button" @onclick="LoadRequestedPage">
+                View
+            </button>
+            <button type="button" class="inventory-button" @onclick="RefreshInventory">
+                Refresh
+            </button>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.StatusMessage))
+    {
+        <div class="inventory-alert" role="alert">
+            @ViewModel.StatusMessage
+        </div>
+    }
+
+    <div class="inventory-layout">
+        <section class="inventory-list" aria-label="Inventory items">
+            <div class="inventory-list-head">
+                <span>Artifact</span>
+                <span></span>
+            </div>
+
+            @if (ViewModel.IsLoading)
+            {
+                <div class="inventory-empty">Loading inventory...</div>
+            }
+            else if (ViewModel.Items.Count == 0)
+            {
+                <div class="inventory-empty">Inventory is empty.</div>
+            }
+            else
+            {
+                @foreach (var item in ViewModel.Items)
+                {
+                    <article class="inventory-row">
+                        <div class="inventory-artifact">
+                            <span class="inventory-artifact-name">@(item.Artifact?.Name ?? "Unknown artifact")</span>
+                            <span class="inventory-artifact-description">@(item.Artifact?.Description ?? item.ArtifactId.ToString())</span>
+                        </div>
+                        <div class="inventory-actions">
+                            <button type="button"
+                                    class="inventory-icon-button"
+                                    title="View details"
+                                    aria-label="View item details"
+                                    @onclick="() => ShowDetails(item.Id)">
+                                i
+                            </button>
+                            <button type="button"
+                                    class="inventory-icon-button inventory-danger-button"
+                                    title="Delete item"
+                                    aria-label="Delete inventory item"
+                                    @onclick="() => DeleteItem(item.Id)">
+                                ×
+                            </button>
+                        </div>
+                    </article>
+                }
+            }
+
+            <footer class="inventory-pagination" aria-label="Inventory pages">
+                <button type="button"
+                        class="inventory-page-button"
+                        disabled="@(!ViewModel.CanGoPrevious)"
+                        @onclick="PreviousPage">
+                    ‹
+                </button>
+                <span class="inventory-page-count">@ViewModel.Page</span>
+                <button type="button"
+                        class="inventory-page-button"
+                        disabled="@(!ViewModel.CanGoNext)"
+                        @onclick="NextPage">
+                    ›
+                </button>
+            </footer>
+        </section>
+
+        <aside class="inventory-detail" aria-label="Inventory item details">
+            @if (ViewModel.SelectedItem is null)
+            {
+                <div class="inventory-detail-empty">
+                    Select an item to inspect it.
+                </div>
+            }
+            else
+            {
+                <div class="inventory-detail-head">
+                    <div>
+                        <span class="inventory-eyebrow">GetById result</span>
+                        <h2 class="inventory-detail-title">@(ViewModel.SelectedItem.Artifact?.Name ?? "Inventory item")</h2>
+                    </div>
+                    <button type="button"
+                            class="inventory-icon-button"
+                            title="Close details"
+                            aria-label="Close item details"
+                            @onclick="ViewModel.CloseDetails">
+                        ×
+                    </button>
+                </div>
+
+                <p class="inventory-detail-description">
+                    @(ViewModel.SelectedItem.Artifact?.Description ?? "No artifact description.")
+                </p>
+
+                <dl class="inventory-detail-grid">
+                    <div>
+                        <dt>Description</dt>
+                        <dd><code>@ViewModel.SelectedItem.Artifact.Description</code></dd>
+                    </div>
+                </dl>
+            }
+        </aside>
+    </div>
+</section>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadAsync();
+    }
+
+    private async Task LoadRequestedPage()
+    {
+        await ViewModel.LoadAsync();
+    }
+
+    private async Task RefreshInventory()
+    {
+        await ViewModel.LoadPageAsync(ViewModel.Page);
+    }
+
+    private async Task PreviousPage()
+    {
+        await ViewModel.PreviousPageAsync();
+    }
+
+    private async Task NextPage()
+    {
+        await ViewModel.NextPageAsync();
+    }
+
+    private async Task DeleteItem(Guid id)
+    {
+        await ViewModel.DeleteAsync(id);
+    }
+
+    private async Task ShowDetails(Guid id)
+    {
+        await ViewModel.ShowDetailsAsync(id);
+    }
+
+}

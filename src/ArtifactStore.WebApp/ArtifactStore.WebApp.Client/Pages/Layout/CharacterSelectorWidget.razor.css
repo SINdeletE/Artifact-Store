@@ -1,0 +1,154 @@
+.character-widget {
+    display: grid;
+    grid-template-columns: minmax(8rem, 11rem) minmax(14rem, 18rem);
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.65rem;
+    border: 1px solid rgba(173, 132, 60, 0.22);
+    border-radius: 1rem;
+    background: rgba(12, 9, 7, 0.56);
+    box-shadow: inset 0 1px 0 rgba(255, 233, 189, 0.05);
+}
+
+.character-widget-copy {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.character-label {
+    color: rgba(194, 161, 96, 0.7);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.character-name {
+    overflow: hidden;
+    color: #f2e6c8;
+    font-size: 0.96rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.character-picker {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.character-select,
+.character-name-input {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid rgba(173, 132, 60, 0.3);
+    border-radius: 0.7rem;
+    color: #f5e7bf;
+    font-weight: 600;
+    background-color: #21170f;
+}
+
+.character-select {
+    height: 2.35rem;
+    padding: 0 2rem 0 0.75rem;
+}
+
+.character-name-input {
+    height: 2.2rem;
+    padding: 0 0.7rem;
+}
+
+.character-name-input::placeholder {
+    color: rgba(221, 204, 170, 0.48);
+}
+
+.character-pagination {
+    display: grid;
+    grid-template-columns: 2rem 2rem 3.2rem 2rem;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.character-page-button,
+.character-command-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(173, 132, 60, 0.28);
+    border-radius: 999px;
+    color: #f5e7bf;
+    font-weight: 800;
+    line-height: 1;
+    background: rgba(74, 53, 22, 0.72);
+}
+
+.character-page-button {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.2rem;
+}
+
+.character-command-button {
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 1.1rem;
+}
+
+.character-delete-button {
+    border-color: rgba(199, 89, 72, 0.42);
+    color: #ffd5cc;
+    background: rgba(92, 30, 24, 0.66);
+}
+
+.character-page-button:disabled,
+.character-command-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+.character-select:focus-visible,
+.character-name-input:focus-visible,
+.character-page-button:focus-visible,
+.character-command-button:focus-visible {
+    outline: 2px solid rgba(220, 185, 112, 0.75);
+    outline-offset: 2px;
+}
+
+.character-page-count {
+    color: rgba(221, 204, 170, 0.82);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.character-actions {
+    display: grid;
+    grid-template-columns: minmax(8.5rem, 1fr) 2.1rem 2.1rem;
+    align-items: center;
+    gap: 0.4rem;
+    grid-column: 1 / -1;
+}
+
+.character-status {
+    grid-column: 1 / -1;
+    color: #ffd5cc;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+@media (max-width: 640.98px) {
+    .character-widget {
+        grid-template-columns: 1fr;
+        width: 100%;
+    }
+
+    .character-actions {
+        grid-template-columns: minmax(0, 1fr) 2.1rem 2.1rem;
+    }
+}

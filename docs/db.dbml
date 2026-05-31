@@ -1,0 +1,100 @@
+Table "account_roles" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "name" varchar(32) [unique, not null]
+}
+
+Table "accounts" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "role_id" uuid [not null]
+  "nickname" varchar(32) [unique, not null]
+  "password" varchar(256) [not null]
+  "email" varchar(254) [unique, not null]
+  "register_date" date [not null, default: `now()`]
+  "deleted_at" timestamp [default: null]
+}
+
+Table "characters" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "account_id" uuid [not null]
+  "name" varchar(32) [not null]
+  "creation_date" date [not null, default: `now()`]
+  "deleted_at" timestamp [default: null]
+}
+
+Table "artifacts" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "name" varchar(128) [unique, not null]
+  "description" varchar(512) [not null, default: `''`]
+  "deleted_at" timestamp [default: null]
+}
+
+Table "currencies" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "name" varchar(128) [unique, not null]
+  "deleted_at" timestamp [default: null]
+}
+
+Table "inventory_items" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "character_id" uuid [not null]
+  "artifact_id" uuid [not null]
+}
+
+Table "balances" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "character_id" uuid [not null]
+  "currency_id" uuid [not null]
+  "amount" "numeric(19, 4)" [not null, default: 0]
+  "deleted_at" timestamp [default: null]
+}
+
+Table "store_items" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "currency_id" uuid [not null]
+  "artifact_id" uuid [not null]
+  "price" "numeric(19, 4)" [not null, default: 0]
+}
+
+Table "store_transaction_types" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "name" varchar(32) [unique, not null]
+}
+
+Table "store_transaction_statuses" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "name" varchar(32) [unique, not null]
+}
+
+Table "store_transactions" {
+  "id" uuid [pk, default: `gen_random_uuid()`]
+  "balance_id" uuid [not null]
+  "artifact_id" uuid [not null]
+  "type_id" uuid [not null]
+  "status_id" uuid [not null]
+  "amount" "numeric(19, 4)" [not null, default: 0]
+  "transaction_datetime" timestamp [not null, default: `now()`]
+}
+
+Ref:"account_roles"."id" < "accounts"."role_id" [delete: restrict]
+
+Ref:"accounts"."id" < "characters"."account_id" [delete: restrict]
+
+Ref:"characters"."id" < "inventory_items"."character_id" [delete: restrict]
+
+Ref:"artifacts"."id" < "inventory_items"."artifact_id" [delete: restrict]
+
+Ref:"characters"."id" < "balances"."character_id" [delete: restrict]
+
+Ref:"currencies"."id" < "balances"."currency_id" [delete: restrict]
+
+Ref:"currencies"."id" < "store_items"."currency_id" [delete: restrict]
+
+Ref:"artifacts"."id" < "store_items"."artifact_id" [delete: restrict]
+
+Ref:"balances"."id" < "store_transactions"."balance_id" [delete: restrict]
+
+Ref:"artifacts"."id" < "store_transactions"."artifact_id" [delete: restrict]
+
+Ref:"store_transaction_types"."id" < "store_transactions"."type_id" [delete: restrict]
+
+Ref:"store_transaction_statuses"."id" < "store_transactions"."status_id" [delete: restrict]

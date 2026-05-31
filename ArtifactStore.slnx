@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/src/">
+    <File Path="docker-compose.yaml" />
+    <File Path="src\admin-cli\main.py" />
+    <Project Path="src/ArtifactStore.Application/ArtifactStore.Application.csproj" />
+    <Project Path="src/ArtifactStore.Auth.API/ArtifactStore.Auth.API.csproj" />
+    <Project Path="src/ArtifactStore.Auth.Application/ArtifactStore.Auth.Application.csproj" />
+    <Project Path="src/ArtifactStore.Auth.Domain/ArtifactStore.Auth.Domain.csproj" />
+    <Project Path="src/ArtifactStore.Auth.Infrastructure/ArtifactStore.Auth.Infrastructure.csproj" />
+    <Project Path="src/ArtifactStore.Domain/ArtifactStore.Domain.csproj" />
+    <Project Path="src/ArtifactStore.Infrastructure/ArtifactStore.Infrastructure.csproj" />
+    <Project Path="src/ArtifactStore.Migration.CLI/ArtifactStore.Migration.CLI.csproj" />
+    <Project Path="src/ArtifactStore.WebApp/ArtifactStore.WebApp.Client/ArtifactStore.WebApp.Client.csproj" />
+    <Project Path="src/ArtifactStore.WebApp/ArtifactStore.WebApp.Shared/ArtifactStore.WebApp.Shared.csproj" />
+    <Project Path="src/ArtifactStore.WebApp/ArtifactStore.WebApp/ArtifactStore.WebApp.csproj" />
+    <Project Path="src\ArtifactStore.API\ArtifactStore.API.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ArtifactStore.Domain.Tests/ArtifactStore.Domain.Tests.csproj" />
+    <Project Path="tests/ArtifactStore.Application.Tests/ArtifactStore.Application.Tests.csproj" />
+    <Project Path="tests/ArtifactStore.Infrastructure.Tests/ArtifactStore.Infrastructure.Tests.csproj" />
+  </Folder>
+</Solution>

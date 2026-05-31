@@ -1,0 +1,177 @@
+﻿services:
+  database:
+    image: postgres:18.3
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./db/scripts/01_create.sql:/docker-entrypoint-initdb.d/01_create.sql
+      - ./db/scripts/02_procedures.sql:/docker-entrypoint-initdb.d/02_procedures.sql
+      - ./db/scripts/03_constaints.sql:/docker-entrypoint-initdb.d/03_constaints.sql
+      - ./db/scripts/04_permissions.sql:/docker-entrypoint-initdb.d/04_permissions.sql
+      - ./db/scripts/05_seed_references.sql:/docker-entrypoint-initdb.d/05_seed_references.sql
+      - ./db/scripts/10_feature_discount.sql:/docker-entrypoint-initdb.d/10_feature_discount.sql
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+  database-mongo:
+    image: mongo:7
+    ports:
+      - "${MONGODB_PORT}:27017"
+    container_name: database-mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_INITDB_ROOT_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_INITDB_ROOT_PASSWORD}
+      - MONGODB_DEFAULT_USER_NAME=${MONGODB_DEFAULT_USER_NAME}
+      - MONGODB_DEFAULT_USER_PASSWORD=${MONGODB_DEFAULT_USER_PASSWORD}
+      - MONGODB_MODERATOR_NAME=${MONGODB_MODERATOR_NAME}
+      - MONGODB_MODERATOR_PASSWORD=${MONGODB_MODERATOR_PASSWORD}
+      - MONGODB_ADMINISTRATOR_NAME=${MONGODB_ADMINISTRATOR_NAME}
+      - MONGODB_ADMINISTRATOR_PASSWORD=${MONGODB_ADMINISTRATOR_PASSWORD}
+    volumes:
+      - ./db_mongo/mongo_data:/data/db
+      - ./db_mongo/init-users.js:/docker-entrypoint-initdb.d/init-users.js
+    command:
+      - bash
+      - -c
+      - |
+        KEYFILE=/data/db/keyfile
+        if [ ! -f $$KEYFILE ]; then
+          openssl rand -base64 756 > $$KEYFILE
+          chmod 400 $$KEYFILE
+          chown mongodb:mongodb $$KEYFILE
+        fi
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile $$KEYFILE
+    healthcheck:
+      test: ["CMD", "mongosh", "-u", "${MONGODB_INITDB_ROOT_USERNAME}", "-p", "${MONGODB_INITDB_ROOT_PASSWORD}", "--authenticationDatabase", "admin", "--quiet", "--eval", "db.adminCommand({ping:1})"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  mongo-init:
+    image: mongo:7
+    depends_on:
+      database-mongo:
+        condition: service_healthy
+    restart: "no"
+    env_file:
+      - .env
+    entrypoint:
+      - bash
+      - -c
+      - |
+        mongosh --host database-mongo:27017 \
+          -u "$$MONGODB_INITDB_ROOT_USERNAME" \
+          -p "$$MONGODB_INITDB_ROOT_PASSWORD" \
+          --authenticationDatabase admin \
+          --quiet \
+          --eval 'try { rs.status(); print("replica set already initialized"); } catch(e) { rs.initiate({_id: "rs0", members: [{_id: 0, host: "database-mongo:27017"}]}); }'
+  redis:
+    image: redis:8.6.2
+    container_name: redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_USER_PASSWORD=${REDIS_USER_PASSWORD}
+    ports:
+      - "${REDIS_PORT}:6379"
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command: >
+      sh -c '
+        mkdir -p /usr/local/etc/redis &&
+        echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+        echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+        echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+        echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+        echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+        redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+      '
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+  
+  main-api:
+    build: 
+      context: .
+      dockerfile: ./src/ArtifactStore.API/Dockerfile
+    hostname: ${MAIN_API_HOSTNAME}
+    restart: always
+    depends_on:
+      database:
+        condition: service_started
+      database-mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    ports:
+      - "${MAIN_API_PORT}:${MAIN_API_INTERNAL_PORT}"
+    volumes:
+      - ${MAIN_API_LOGPATH}:${MAIN_API_SERVER_LOGPATH}
+
+  auth-api:
+    build:
+      context: .
+      dockerfile: ./src/ArtifactStore.Auth.API/Dockerfile
+    hostname: ${AUTH_API_HOSTNAME}
+    restart: always
+    depends_on:
+      - database
+      - database-mongo
+      - redis
+    env_file:
+      - .env
+    ports:
+      - "${AUTH_API_PORT}:${AUTH_API_INTERNAL_PORT}"
+    volumes:
+      - ${AUTH_API_LOGPATH}:${AUTH_API_SERVER_LOGPATH}
+  
+  web-app-server-side:
+    build:
+      context: .
+      dockerfile: ./src/ArtifactStore.WebApp/ArtifactStore.WebApp/Dockerfile
+    hostname: ${WEB_APP_SERVER_SIDE_HOSTNAME}
+    restart: always
+    depends_on:
+      - main-api
+      - auth-api
+    env_file:
+      - .env
+    ports:
+      - "${WEB_APP_SERVER_SIDE_PORT}:${WEB_APP_SERVER_SIDE_INTERNAL_PORT}"
+
+  migration-cli:
+    build:
+      context: .
+      dockerfile: ./src/ArtifactStore.Migration.CLI/Dockerfile
+    depends_on:
+      database:
+        condition: service_started
+      database-mongo:
+        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env
+    profiles:
+      - tools

@@ -1,0 +1,148 @@
+@page "/"
+@rendermode InteractiveServer
+
+<PageTitle>Home</PageTitle>
+
+<section class="home-page">
+    <header class="home-hero">
+        <div class="home-hero-copy">
+            <span class="home-eyebrow">Artifact Store command desk</span>
+            <h1 class="home-title">Overview</h1>
+            <p class="home-lead">
+                Track market movement, inspect character progress, and jump into the artifact flow without digging through menus.
+            </p>
+            <AuthorizeView>
+                <Authorized>
+                    <div class="home-actions" aria-label="Quick navigation">
+                        <a class="home-button home-primary-button" href="/shop">Open shop</a>
+                        <a class="home-button" href="/inventory">View inventory</a>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <div class="home-actions" aria-label="Account navigation">
+                        <a class="home-button home-primary-button" href="/auth/login">Sign in</a>
+                        <a class="home-button" href="/auth/register">Create account</a>
+                    </div>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <div class="home-hero-art" aria-hidden="true">
+            <img src="images/logo.png" alt="" class="home-logo" />
+            <div class="home-orbit home-orbit-top"></div>
+            <div class="home-orbit home-orbit-bottom"></div>
+        </div>
+    </header>
+
+    <section class="home-metrics" aria-label="Store highlights">
+        <article class="home-metric">
+            <span class="home-metric-label">Market state</span>
+            <strong>Open</strong>
+            <span class="home-metric-note">Trades and purchases are available</span>
+        </article>
+        <article class="home-metric">
+            <span class="home-metric-label">Focus</span>
+            <strong>Character gear</strong>
+            <span class="home-metric-note">Shop and inventory share the selected character</span>
+        </article>
+        <article class="home-metric">
+            <span class="home-metric-label">Cycle</span>
+            <strong>Daily finds</strong>
+            <span class="home-metric-note">Check the shop before spending currencies</span>
+        </article>
+    </section>
+
+    <div class="home-layout">
+        <section class="home-panel" aria-labelledby="news-title">
+            <div class="home-panel-head">
+                <div>
+                    <span class="home-eyebrow">News</span>
+                    <h2 id="news-title">Guild notices</h2>
+                </div>
+                <span class="home-badge">Updated</span>
+            </div>
+
+            <div class="home-news-list">
+                @foreach (var item in News)
+                {
+                    <article class="home-news-item">
+                        <time>@item.Date</time>
+                        <div>
+                            <h3>@item.Title</h3>
+                            <p>@item.Description</p>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <aside class="home-side" aria-label="Activity and checklist">
+            <section class="home-panel">
+                <div class="home-panel-head">
+                    <div>
+                        <span class="home-eyebrow">Activity</span>
+                        <h2>Latest signals</h2>
+                    </div>
+                </div>
+
+                <ol class="home-timeline">
+                    @foreach (var signal in Signals)
+                    {
+                        <li>
+                            <span>@signal.Time</span>
+                            <p>@signal.Text</p>
+                        </li>
+                    }
+                </ol>
+            </section>
+
+            <section class="home-panel">
+                <div class="home-panel-head">
+                    <div>
+                        <span class="home-eyebrow">Next steps</span>
+                        <h2>Recommended route</h2>
+                    </div>
+                </div>
+
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="home-route">
+                            <a href="/shop">Review prices</a>
+                            <a href="/inventory">Clean inventory</a>
+                            <a href="/shop">Buy upgrades</a>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="home-route" aria-label="Locked actions">
+                            <span class="home-route-locked">Review prices</span>
+                            <span class="home-route-locked">Clean inventory</span>
+                            <span class="home-route-locked">Buy upgrades</span>
+                        </div>
+                        <p class="home-auth-note">
+                            Sign in to open character-specific actions.
+                        </p>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </section>
+        </aside>
+    </div>
+</section>
+
+@code {
+    private static readonly HomeNewsItem[] News =
+    [
+        new("Today", "Marketplace watch", "Rare artifacts are moving fastest when paired with flexible currency reserves."),
+        new("May 2026", "Character selector refreshed", "Pagination now keeps actions tied to the visible character page."),
+        new("Season note", "Inventory cleanup", "Old finds are easier to inspect from the inventory detail panel.")
+    ];
+
+    private static readonly HomeSignal[] Signals =
+    [
+        new("09:40", "Shop page is ready for price checks."),
+        new("10:15", "Inventory list supports quick inspection and removal."),
+        new("11:00", "Character context is shared across game screens.")
+    ];
+
+    private sealed record HomeNewsItem(string Date, string Title, string Description);
+    private sealed record HomeSignal(string Time, string Text);
+}

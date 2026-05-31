@@ -1,0 +1,49 @@
+﻿@inherits LayoutComponentBase
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main class="main-shell">
+        <div class="top-row">
+            <div class="top-row-copy">
+                <span class="eyebrow">Artifact Store</span>
+                <span class="top-row-title">Control center</span>
+            </div>
+
+            <AuthorizeView>
+                <Authorized>
+                    <div class="top-row-auth">
+                        <CharacterSelectorWidget />
+                        <span class="top-row-action">@userName</span>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <NavLink href="/auth/login" class="top-row-action">Login</NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div >
+
+        <article class="content-shell">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private string? userName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        userName = authState.User.Identity?.Name;
+    }
+}

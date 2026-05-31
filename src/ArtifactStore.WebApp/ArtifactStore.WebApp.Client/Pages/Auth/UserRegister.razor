@@ -1,0 +1,77 @@
+@page "/auth/register"
+@rendermode InteractiveWebAssembly
+@inject NavigationManager Navigation
+@inherits Blazing.Mvvm.Components.MvvmOwningComponentBase<ArtifactStore.WebApp.Client.ViewModel.Auth.RegisterViewModel>
+
+<PageTitle>Register</PageTitle>
+
+<div class="register-page">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-5">
+                <div class="register-card">
+                    <div class="p-4 p-lg-5">
+                        <div class="register-intro text-center mb-4">
+                            <div class="register-eyebrow">Join Artifact Store</div>
+                            <h1 class="register-title mb-2">Register</h1>
+                        </div>
+
+                        <EditForm Model="@ViewModel" FormName="register" OnValidSubmit="@HandleValidSubmit">
+                            <DataAnnotationsValidator />
+
+                            @if (!string.IsNullOrWhiteSpace(@ViewModel.StatusMessage))
+                            {
+                                <div class="register-alert" role="alert">
+                                    @ViewModel.StatusMessage
+                                </div>
+                            }
+
+                            <div class="register-form-stack">
+                                <div class="register-field">
+                                    <label class="register-label" for="email">Email</label>
+                                    <InputText id="email" class="register-input" @bind-Value="@ViewModel.RegisterModel.Email" />
+                                    <ValidationMessage For="@(() => @ViewModel.RegisterModel.Email)" class="register-validation" />
+                                </div>
+
+                                <div class="register-field">
+                                    <label class="register-label" for="nickname">Nickname</label>
+                                    <InputText id="nickname" class="register-input" @bind-Value="@ViewModel.RegisterModel.Nickname" />
+                                    <ValidationMessage For="@(() => @ViewModel.RegisterModel.Nickname)" class="register-validation" />
+                                </div>
+
+                                <div class="register-field">
+                                    <label class="register-label" for="password">Password</label>
+                                    <InputText id="password" type="password" class="register-input" @bind-Value="@ViewModel.RegisterModel.Password" />
+                                    <ValidationMessage For="@(() => @ViewModel.RegisterModel.Password)" class="register-validation" />
+                                </div>
+
+                                <div class="register-field">
+                                    <label class="register-label" for="confirmPassword">Confirm password</label>
+                                    <InputText id="confirmPassword" type="password" class="register-input" @bind-Value="@ViewModel.RegisterModel.ConfirmPassword" />
+                                    <ValidationMessage For="@(() => @ViewModel.RegisterModel.ConfirmPassword)" class="register-validation" />
+                                </div>
+
+                                <button type="submit" class="register-button">Create account</button>
+                            </div>
+                        </EditForm>
+
+                        <p class="register-footer text-center mt-4 mb-0">
+                            Already with us?
+                            <NavLink href="/auth/login" class="register-link">Sign in</NavLink>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private async Task HandleValidSubmit()
+    {
+        if (await ViewModel.Register())
+        {
+            Navigation.NavigateTo("/auth/login");
+        }
+    }
+}

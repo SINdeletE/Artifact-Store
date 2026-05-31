@@ -1,0 +1,93 @@
+@rendermode InteractiveWebAssembly
+@inject ArtifactStore.WebApp.Client.ViewModel.Layout.CharacterSelectorViewModel CharacterSelector
+
+<section class="character-widget" aria-label="Current character">
+    <div class="character-widget-copy">
+        <span class="character-label">Current character</span>
+        <span class="character-name">@(CharacterSelector.SelectedCharacter?.Name ?? "No character")</span>
+    </div>
+
+    <div class="character-picker">
+        <select class="character-select"
+                value="@CharacterSelector.SelectedCharacterId"
+                @onchange="OnCharacterChanged"
+                aria-label="Select current character">
+            @foreach (var character in CharacterSelector.CurrentPageCharacters)
+            {
+                <option value="@character.Id">@character.Name</option>
+            }
+        </select>
+
+        <div class="character-pagination" aria-label="Character pages">
+            <button class="character-page-button"
+                    type="button"
+                    title="Refresh characters"
+                    aria-label="Refresh characters"
+                    @onclick="CharacterSelector.RefreshAsync">
+                ↻
+            </button>
+            <button class="character-page-button"
+                    type="button"
+                    title="Previous page"
+                    aria-label="Previous character page"
+                    disabled="@(!CharacterSelector.CanGoPrevious)"
+                    @onclick="CharacterSelector.PreviousPage">
+                ‹
+            </button>
+            <span class="character-page-count">@CharacterSelector.Page / @CharacterSelector.TotalPages</span>
+            <button class="character-page-button"
+                    type="button"
+                    title="Next page"
+                    aria-label="Next character page"
+                    disabled="@(!CharacterSelector.CanGoNext)"
+                    @onclick="CharacterSelector.NextPage">
+                ›
+            </button>
+        </div>
+    </div>
+
+    <div class="character-actions">
+        <input class="character-name-input"
+               placeholder="New character"
+               aria-label="New character name"
+               @bind="CharacterSelector.NewCharacterName"
+               @bind:event="oninput" />
+        <button class="character-command-button"
+                type="button"
+                title="Add character"
+                aria-label="Add character"
+                @onclick="CharacterSelector.AddCharacterAsync">
+            +
+        </button>
+        <button class="character-command-button character-delete-button"
+                type="button"
+                title="Delete selected character"
+                aria-label="Delete selected character"
+                disabled="@(CharacterSelector.SelectedCharacterId is null)"
+                @onclick="CharacterSelector.DeleteSelectedCharacterAsync">
+            ×
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(CharacterSelector.StatusMessage))
+    {
+        <div class="character-status" role="status">
+            @CharacterSelector.StatusMessage
+        </div>
+    }
+</section>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await CharacterSelector.LoadPageAsync();
+    }
+
+    private async Task OnCharacterChanged(ChangeEventArgs args)
+    {
+        if (Guid.TryParse(args.Value?.ToString(), out var characterId))
+        {
+            await CharacterSelector.SelectCharacterAsync(characterId);
+        }
+    }
+}

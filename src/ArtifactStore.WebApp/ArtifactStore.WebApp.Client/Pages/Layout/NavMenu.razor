@@ -1,0 +1,47 @@
+﻿<div class="brand-panel">
+    <a class="brand-mark" href="" aria-label="Artifact Store home">
+        <img src="images/logo.png" alt="Artifact Store logo" class="brand-image" />
+    </a>
+    <div class="brand-copy">
+        <a class="brand-title" href="">ARTIFACT STORE</a>
+        <p class="brand-subtitle">Legendary artifacts marketplace game</p>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav-shell">
+        <div class="nav-section-label">Navigation</div>
+
+        <div class="nav-item">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <span class="nav-icon bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
+                <span class="nav-copy">
+                    <span class="nav-title">Home</span>
+                    <span class="nav-subtitle">Overview and quick access</span>
+                </span>
+            </NavLink>
+        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="/shop">
+                        <span class="nav-icon bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
+                        <span class="nav-copy">
+                            <span class="nav-title">Shop</span>
+                        </span>
+                    </NavLink>
+                </div>
+                <div class="nav-item">
+                    <NavLink class="nav-link" href="/inventory">
+                        <span class="nav-icon bi bi-house-door-fill-nav-menu" aria-hidden="true"></span>
+                        <span class="nav-copy">
+                            <span class="nav-title">Inventory</span>
+                        </span>
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+    </nav>
+</div>

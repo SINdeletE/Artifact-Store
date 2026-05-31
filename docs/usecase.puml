@@ -1,0 +1,49 @@
+@startuml usecase
+left to right direction
+actor "Пользователь" as user
+actor "Модератор" as moder
+actor "Администратор" as admin
+
+usecase "Просмотреть артефакты в магазине" as uc1
+usecase "Купить артефакты в магазине" as uc2
+usecase "Просмотреть страницу инвентаря персонажа" as uc3
+usecase "Продать артефакт" as uc4
+usecase "Просмотреть балансы" as uc5
+usecase "Пополнить баланс в выбранной валюте" as uc6
+usecase "Просмотреть персонажей пользователя" as uc7
+usecase "Создать/Выбрать персонажей" as uc8
+usecase "Просмотреть страницу магазинных транзакций" as uc9
+
+usecase "Добавить/удалить артефакты в магазине" as uc_a1
+usecase "Изменить инвентарь персонажа" as uc_a2
+usecase "Изменить баланс персонажа" as uc_a3
+usecase "Добавить/удалить/забанить персонажей" as uc_a4
+
+
+user --> uc1
+user --> uc2
+user --> uc3
+user --> uc4
+user --> uc5
+user --> uc6
+user --> uc7
+user --> uc8
+
+moder -> uc1
+moder -> uc3
+moder -> uc5
+moder -> uc7
+moder -> uc9
+
+admin -> uc1
+admin -> uc3
+admin -> uc5
+admin -> uc7
+admin -> uc9
+admin --> uc_a1
+admin --> uc_a2
+admin --> uc_a3
+admin --> uc_a4
+
+
+@enduml

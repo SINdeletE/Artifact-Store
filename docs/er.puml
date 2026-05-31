@@ -1,0 +1,71 @@
+@startchen
+top to bottom direction
+
+entity User {
+    id
+    nick
+    password
+    email
+    date_of_birth
+}
+
+entity Player {
+    id
+    name
+    experience
+    player_class
+    creation_date
+}
+
+entity Artifact {
+    id
+    name
+    history
+}
+
+entity Currency {
+    id
+    name
+}
+
+entity PlayerBalance {
+    id
+    currency
+    balance
+}
+
+relationship Владеет {
+
+}
+relationship Баланс_в_валюте {
+
+}
+relationship Продаётся_за {
+
+}
+
+relationship Владеет_накоплениями {
+
+}
+
+relationship Транзакции_в_магазине {
+
+}
+
+Владеет -1- User
+Владеет -N- Player
+
+Баланс_в_валюте -1- Currency
+Баланс_в_валюте -N- PlayerBalance
+
+Продаётся_за -N- Currency
+Продаётся_за -N- Artifact
+
+Владеет_накоплениями -N- PlayerBalance
+Владеет_накоплениями -1- Player
+
+Транзакции_в_магазине -N- Artifact
+Транзакции_в_магазине -N- PlayerBalance
+Транзакции_в_магазине -N- Currency
+
+@endchen

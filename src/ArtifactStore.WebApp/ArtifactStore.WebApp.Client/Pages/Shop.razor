@@ -1,0 +1,259 @@
+@page "/shop"
+@rendermode InteractiveWebAssembly
+@using ArtifactStore.WebApp.Client.ViewModel.Shop
+@inherits Blazing.Mvvm.Components.MvvmOwningComponentBase<ShopViewModel>
+<PageTitle>Shop</PageTitle>
+
+<section class="shop-page">
+    <header class="shop-header">
+        <div>
+            <span class="shop-eyebrow">Marketplace</span>
+            <h1 class="shop-title">Shop</h1>
+        </div>
+
+        <div class="shop-toolbar">
+            <label class="shop-page-field" for="shop-page-number">
+                <span>Page</span>
+                <InputNumber id="shop-page-number"
+                             class="shop-page-input"
+                             min="1"
+                             @bind-Value="ViewModel.Page" />
+            </label>
+            <button type="button" class="shop-button shop-primary-button" @onclick="LoadRequestedPage">
+                View
+            </button>
+            <button type="button" class="shop-button" @onclick="RefreshShop">
+                Refresh
+            </button>
+        </div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(ViewModel.StatusMessage))
+    {
+        <div class="shop-status" role="status">
+            @ViewModel.StatusMessage
+        </div>
+    }
+
+    <div class="shop-layout">
+        <section class="shop-items" aria-label="Store items">
+            <div class="shop-items-head">
+                <span>Artifact</span>
+                <span>Currency</span>
+                <span>Price</span>
+            </div>
+
+            @if (ViewModel.IsLoading)
+            {
+                <div class="shop-empty">Loading shop...</div>
+            }
+            else if (ViewModel.Items.Count == 0)
+            {
+                <div class="shop-empty">Shop is empty.</div>
+            }
+            else
+            {
+                @foreach (var item in ViewModel.Items)
+                {
+                    <button type="button"
+                            class="shop-row @(ViewModel.SelectedItem?.Id == item.Id ? "shop-row-selected" : "")"
+                            @onclick="() => SelectItem(item.Id)">
+                        <span class="shop-artifact">
+                            <span class="shop-artifact-name">@(item.Artifact?.Name ?? "Unknown artifact")</span>
+                            <span class="shop-artifact-description">@(item.Artifact?.Description ?? item.ArtifactId.ToString())</span>
+                        </span>
+                        <span class="shop-currency">@(item.Currency?.Name ?? "Unknown")</span>
+                        <span class="shop-price">
+                            @if (ShopViewModel.HasDiscount(item))
+                            {
+                                <span class="shop-price-current">@ShopViewModel.FormatPrice(ShopViewModel.GetDisplayPrice(item))</span>
+                                <span class="shop-price-old">@ShopViewModel.FormatPrice(item.Price)</span>
+                                <span class="shop-discount">@ShopViewModel.FormatDiscountPercent(item)</span>
+                            }
+                            else
+                            {
+                                <span>@ShopViewModel.FormatPrice(item.Price)</span>
+                            }
+                        </span>
+                    </button>
+                }
+            }
+
+            <footer class="shop-pagination" aria-label="Shop pages">
+                <button type="button"
+                        class="shop-page-button"
+                        disabled="@(!ViewModel.CanGoPrevious)"
+                        @onclick="PreviousPage">
+                    ‹
+                </button>
+                <span class="shop-page-count">@ViewModel.Page</span>
+                <button type="button"
+                        class="shop-page-button"
+                        disabled="@(!ViewModel.CanGoNext)"
+                        @onclick="NextPage">
+                    ›
+                </button>
+            </footer>
+        </section>
+
+        <aside class="shop-side" aria-label="Shop summary and character currencies">
+            <section class="shop-summary" aria-label="Selected store item summary">
+                @if (ViewModel.SelectedItem is null)
+                {
+                    <div class="shop-summary-empty">Select a store item to inspect it.</div>
+                }
+                else
+                {
+                    <div class="shop-summary-head">
+                        <div>
+                            <span class="shop-eyebrow">Position summary</span>
+                            <h2 class="shop-summary-title">@(ViewModel.SelectedItem.Artifact?.Name ?? "Store item")</h2>
+                        </div>
+                        <button type="button"
+                                class="shop-icon-button"
+                                title="Close summary"
+                                aria-label="Close summary"
+                                @onclick="ViewModel.CloseSummary">
+                            ×
+                        </button>
+                    </div>
+
+                    <p class="shop-summary-description">
+                        @(ViewModel.SelectedItem.Artifact?.Description ?? "No artifact description.")
+                    </p>
+
+                    <dl class="shop-summary-grid">
+                        <div>
+                            <dt>Artifact</dt>
+                            <dd>@(ViewModel.SelectedItem.Artifact?.Name ?? "???")</dd>
+                        </div>
+                        <div>
+                            <dt>Description</dt>
+                            <dd>@(ViewModel.SelectedItem.Artifact?.Description ?? "???")</dd>
+                        </div>
+                        <div>
+                            <dt>Currency</dt>
+                            <dd>@(ViewModel.SelectedItem.Currency?.Name ?? "???")</dd>
+                        </div>
+                        <div>
+                            <dt>Price</dt>
+                            <dd>
+                                @if (ShopViewModel.HasDiscount(ViewModel.SelectedItem))
+                                {
+                                    <span class="shop-price-detail">
+                                        <span class="shop-price-current">@ShopViewModel.FormatPrice(ShopViewModel.GetDisplayPrice(ViewModel.SelectedItem))</span>
+                                        <span class="shop-price-old">@ShopViewModel.FormatPrice(ViewModel.SelectedItem.Price)</span>
+                                        <span class="shop-discount">@ShopViewModel.FormatDiscountPercent(ViewModel.SelectedItem)</span>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>@ShopViewModel.FormatPrice(ViewModel.SelectedItem.Price)</span>
+                                }
+                            </dd>
+                        </div>
+                    </dl>
+
+                    @if (ShopViewModel.HasDiscount(ViewModel.SelectedItem))
+                    {
+                        <div class="shop-discount-card">
+                            <span class="shop-eyebrow">Active discount</span>
+                            <dl class="shop-summary-grid">
+                                <div>
+                                    <dt>Name</dt>
+                                    <dd>@ShopViewModel.FormatDiscountName(ViewModel.SelectedItem)</dd>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(ShopViewModel.FormatDiscountDescription(ViewModel.SelectedItem)))
+                                {
+                                    <div>
+                                        <dt>Description</dt>
+                                        <dd>@ShopViewModel.FormatDiscountDescription(ViewModel.SelectedItem)</dd>
+                                    </div>
+                                }
+                                <div>
+                                    <dt>Discount</dt>
+                                    <dd>@ShopViewModel.FormatDiscountPercent(ViewModel.SelectedItem)</dd>
+                                </div>
+                                <div>
+                                    <dt>Period</dt>
+                                    <dd>@ShopViewModel.FormatDiscountPeriod(ViewModel.SelectedItem)</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    }
+
+                    <button type="button"
+                            class="shop-purchase-button"
+                            @onclick="PurchaseSelected">
+                        Buy
+                    </button>
+                }
+            </section>
+
+            <section class="shop-balances" aria-label="Character currencies">
+                <div class="shop-balances-head">
+                    <span class="shop-eyebrow">Character currencies</span>
+                    <span class="shop-balances-count">@ViewModel.CharacterCurrencies.Count</span>
+                </div>
+
+                @if (ViewModel.CharacterCurrencies.Count == 0)
+                {
+                    <div class="shop-currency-empty">No currencies to display.</div>
+                }
+                else
+                {
+                    <div class="shop-currency-table">
+                        <div class="shop-currency-head">
+                            <span>Currency</span>
+                            <span>Amount</span>
+                        </div>
+                        @foreach (var currency in ViewModel.CharacterCurrencies)
+                        {
+                            <div class="shop-currency-row">
+                                <span>@currency.Name</span>
+                                <span class="shop-currency-amount">@ShopViewModel.FormatPrice(currency.Amount)</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        </aside>
+    </div>
+</section>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewModel.LoadAsync();
+    }
+
+    private async Task LoadRequestedPage()
+    {
+        await ViewModel.LoadAsync();
+    }
+
+    private async Task RefreshShop()
+    {
+        await ViewModel.LoadPageAsync(ViewModel.Page);
+    }
+
+    private async Task PreviousPage()
+    {
+        await ViewModel.PreviousPageAsync();
+    }
+
+    private async Task NextPage()
+    {
+        await ViewModel.NextPageAsync();
+    }
+
+    private void SelectItem(Guid id)
+    {
+        ViewModel.SelectItem(id);
+    }
+
+    private async Task PurchaseSelected()
+    {
+        await ViewModel.PurchaseSelectedAsync();
+    }
+}
