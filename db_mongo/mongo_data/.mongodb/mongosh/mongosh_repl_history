@@ -1,1 +1,0 @@
-db.createUser({ user: "mongo", pwd: "wehfwjeqon_wkqen_@@@ccvc", roles: [{ role: 'root', db: "admin" }] })
